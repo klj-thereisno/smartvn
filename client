@@ -1,0 +1,56 @@
+package com.javing.html;
+
+import java.io.IOException;
+import java.util.Locale;
+
+import org.apache.http.ProtocolVersion;
+import org.apache.http.StatusLine;
+import org.apache.http.client.ClientProtocolException;
+import org.apache.http.client.methods.CloseableHttpResponse;
+import org.apache.http.client.methods.HttpGet;
+import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.impl.client.HttpClients;
+
+public class HttpClientTest {
+
+	public static void main(String[] args) {
+		CloseableHttpClient client = HttpClients.createDefault(); // like a client
+		HttpGet get = new HttpGet("http://www.baidu.com"); // Request a url by get
+		CloseableHttpResponse resp = null;
+		try {
+			resp = client.execute(get);
+		} catch (ClientProtocolException e) {
+			e.printStackTrace();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+
+		ProtocolVersion version = resp.getProtocolVersion(); // protocolVersion
+		int major = version.getMajor();
+		int minor = version.getMinor();
+		String protocol = version.getProtocol(); // 1.1 HTTP
+		System.out.println("version:" + version);
+		System.out.println("major:" + major); 
+		System.out.println("minor:" + minor);
+		System.out.println("protocol:" + protocol);
+		
+		StatusLine line = resp.getStatusLine();
+		String phrase = line.getReasonPhrase();
+		int code = line.getStatusCode();
+		System.out.println("line:" + line); // stateCode
+		System.out.println("phrase:" + phrase); // OK
+		System.out.println("code:" + code); // 200
+	
+		Locale locale = resp.getLocale();
+		System.out.println("getLanguage:" + locale.getLanguage());
+		System.out.println("getCountry:" + locale.getCountry());
+		try {
+			if(resp != null)
+				resp.close(); // close
+			client.close(); // close client
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
+	
+}
