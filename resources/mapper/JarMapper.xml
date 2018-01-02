@@ -1,0 +1,114 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="fun.thereisno.dao.JarDao" >
+
+	<resultMap type="jar" id="jarMap">
+	</resultMap>
+	
+	<insert id="saveFile">
+		insert into t_jar values (#{id}, #{name}, #{url}, now(), null, null, 0, null, 0, #{jarSize}, null, 0, 0, 0)
+	</insert>
+	
+	<!-- mybatis实现底层细节 null 0 -->
+	<insert id="saveUrl">
+		insert into t_jar values (#{id}, #{name}, #{url}, #{releaseDate}, now(), #{doc}, #{docSize}, #{sources}, #{sourcesSize}, #{jarSize}, #{pom}, #{pomSize}, 0, 0)
+	</insert>
+	
+	<delete id="delete">
+		delete from t_jar where id = #{id}
+	</delete>
+	
+	<select id="getById" resultType="jar">
+		select * from t_jar where id = #{id}
+	</select>
+	
+	<select id="listJar" resultMap="jarMap">
+		select * from t_jar
+		<where>
+			<if test="jar.name != null">
+				name like "%"#{jar.name}"%"
+			</if>
+			<if test="s_b_releaseDate != null">
+				and date(releaseDate) &gt;= date(#{s_b_releaseDate})
+			</if>
+			<if test="s_e_releaseDate != null">
+				and date(releaseDate) &lt;= date(#{s_e_releaseDate})
+			</if>
+			<!-- docSize等于1时 才要求查出有doc文档的 其他情况全部查出 -->
+			<if test="jar.docSize == 1">
+				and docSize != 0
+			</if>
+		</where>
+		order by releaseDate desc
+		limit #{pageBean.start}, #{pageBean.rows}
+	</select>
+	
+	<select id="count" resultType="integer">
+		select count(*) from t_jar
+		<where>
+			<if test="jar.name != null">
+				name like "%"#{jar.name}"%"
+			</if>
+			<if test="s_b_releaseDate != null">
+				and date(releaseDate) &gt;= date(#{s_b_releaseDate})
+			</if>
+			<if test="s_e_releaseDate != null">
+				and date(releaseDate) &lt;= date(#{s_e_releaseDate})
+			</if>
+			<if test="jar.docSize == 1">
+				and docSize != 0
+			</if>
+		</where>
+	</select>
+	
+	<select id="exist" resultType="int">
+		select count(*) from t_jar where name = #{name}
+	</select>
+	
+	<update id="addClick">
+		update t_jar set click = click + 1 where id = #{id}
+	</update>
+	
+	<update id="addDown">
+		update t_jar set down = down + 1 where id = #{id}
+	</update>
+	
+	<!-- <select id="randomJar" resultMap="jarMap">
+		SELECT SUBSTRING_INDEX(NAME,'.jar',1) NAME FROM t_jar ORDER BY RAND() LIMIT #{sum}
+	</select>
+	
+	<select id="topJar" resultMap="jarMap">
+		SELECT id, NAME, SUM(click+down) jarSize FROM t_jar GROUP BY id ORDER BY jarSize DESC LIMIT #{sum}
+	</select> -->
+	
+	<select id="randomJar" resultType="string" >
+		SELECT NAME FROM t_tag ORDER BY RAND() LIMIT #{sum}
+	</select>
+	
+	<select id="topJar" resultMap="jarMap">
+		SELECT id, NAME, SUM(click+down) jarSize FROM t_jar GROUP BY id ORDER BY jarSize DESC LIMIT #{sum}
+	</select>
+	
+	<update id="update">
+		update t_jar
+		<set>
+			name = #{name},
+			url = #{url},
+			releaseDate = #{releaseDate},
+			crawlDate = #{crawlDate},
+			click = #{click},
+			down = #{down},
+			doc = #{doc},
+			sources = #{sources},
+			pom = #{pom},
+			jarSize = #{jarSize},
+			docSize = #{docSize},
+			sourcesSize = #{sourcesSize},
+			pomSize = #{pomSize},
+		</set>
+		where id = #{id}
+	</update>
+	
+</mapper>
